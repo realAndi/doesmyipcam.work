@@ -19,6 +19,18 @@ export const metadata: Metadata = {
   title: "Does My IP Cam Work?",
   description: "A simple, secure way to view your Sharx SCNC IP cameras from any device",
   manifest: "/manifest.json",
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "default",
+    title: "IP Cam Viewer",
+  },
+  icons: {
+    apple: [
+      { url: "/pwa/appicon.png", sizes: "512x512", type: "image/png" },
+    ],
+    icon: "/pwa/appicon.png",
+    shortcut: "/pwa/appicon.png",
+  },
 };
 
 export default function RootLayout({
@@ -28,6 +40,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" suppressHydrationWarning>
+      <head>
+        <link rel="apple-touch-icon" href="/pwa/appicon.png" />
+        <link rel="apple-touch-icon-precomposed" href="/pwa/appicon.png" />
+        <link rel="icon" type="image/png" sizes="512x512" href="/pwa/appicon.png" />
+      </head>
       <body className={inter.className}>
         <ThemeProvider
           attribute="class"
@@ -37,8 +54,8 @@ export default function RootLayout({
         >
           <CameraProvider>
             <ThemeColorScript />
-            <div className="fixed inset-0 bg-[radial-gradient(circle_at_bottom_right,hsl(var(--accent))_0%,transparent_70%)] opacity-20 pointer-events-none transition-colors duration-150" />
-            <main className="min-h-screen pb-24 md:pb-8 md:pt-20 overflow-x-hidden relative transition-colors duration-150">
+            <div className="fixed inset-0 bg-[radial-gradient(circle_at_bottom_right,hsl(var(--accent))_0%,transparent_70%)] opacity-20 pointer-events-none" />
+            <main className="min-h-screen pb-24 md:pb-8 md:pt-20 overflow-x-hidden relative">
               {children}
             </main>
           </CameraProvider>
