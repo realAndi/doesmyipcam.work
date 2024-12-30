@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
 import { Camera } from "./camera-context"
 import { useEffect, useState } from "react"
+import Image from "next/image"
 
 interface CameraViewerProps {
   camera: Camera
@@ -12,13 +13,8 @@ interface CameraViewerProps {
 }
 
 export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
-  const [isSecureContext, setIsSecureContext] = useState(false)
   const [streamError, setStreamError] = useState(false)
   const [streamUrl, setStreamUrl] = useState(camera.streamUrl)
-
-  useEffect(() => {
-    setIsSecureContext(window.isSecureContext)
-  }, [])
 
   useEffect(() => {
     // Ensure we're using HTTP
@@ -44,15 +40,19 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
         </Button>
       </CardHeader>
       <CardContent className="p-0 space-y-4 relative">
-        <img
-          src={streamUrl}
-          alt={`Stream from ${camera.name}`}
-          className="w-full aspect-video object-cover rounded-md bg-muted"
-          onError={(e) => {
-            console.error('Stream error for URL:', streamUrl) // Debug log
-            setStreamError(true)
-          }}
-        />
+        <div className="relative w-full aspect-video">
+          <Image
+            src={streamUrl}
+            alt={`Stream from ${camera.name}`}
+            fill
+            className="object-cover rounded-md bg-muted"
+            onError={() => {
+              console.error('Stream error for URL:', streamUrl) // Debug log
+              setStreamError(true)
+            }}
+            unoptimized // Disable optimization for MJPEG streams
+          />
+        </div>
         {streamError && (
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-sm text-destructive text-center p-4">
