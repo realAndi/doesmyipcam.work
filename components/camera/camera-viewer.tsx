@@ -21,41 +21,11 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
   }, [])
 
   useEffect(() => {
-    const fetchStream = async () => {
-      if (!isSecureContext) {
-        setStreamUrl(camera.streamUrl)
-        return
-      }
-
-      try {
-        const response = await fetch('/api/proxy', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            url: camera.streamUrl,
-            username: camera.username,
-            password: camera.password,
-          }),
-        })
-
-        if (!response.ok) {
-          throw new Error('Failed to fetch stream')
-        }
-
-        const blob = await response.blob()
-        const url = URL.createObjectURL(blob)
-        setStreamUrl(url)
-      } catch (error) {
-        console.error('Stream error:', error)
-        setStreamError(true)
-        setStreamUrl(camera.streamUrl)
-      }
-    }
-
-    fetchStream()
-  }, [camera.streamUrl, camera.username, camera.password, isSecureContext])
+    // Ensure we're using HTTP
+    const url = camera.streamUrl.replace(/^https:/, 'http:')
+    console.log('Using stream URL:', url) // Debug log
+    setStreamUrl(url)
+  }, [camera.streamUrl])
 
   return (
     <Card>
@@ -78,7 +48,10 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
           src={streamUrl}
           alt={`Stream from ${camera.name}`}
           className="w-full aspect-video object-cover rounded-md bg-muted"
-          onError={() => setStreamError(true)}
+          onError={(e) => {
+            console.error('Stream error for URL:', streamUrl) // Debug log
+            setStreamError(true)
+          }}
         />
         {streamError && (
           <div className="absolute inset-0 flex items-center justify-center">

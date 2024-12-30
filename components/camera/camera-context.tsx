@@ -39,6 +39,7 @@ export function CameraProvider({ children }: { children: React.ReactNode }) {
   const addCamera = (camera: Omit<Camera, "id" | "streamUrl" | "streamType">) => {
     const id = crypto.randomUUID()
     const streamUrl = constructStreamUrl(camera.ip, camera.port)
+    console.log('Constructed stream URL:', streamUrl)
     setCameras([...cameras, { ...camera, id, streamUrl, streamType: "mjpeg" }])
   }
 
@@ -62,7 +63,9 @@ export function useCameras() {
 }
 
 const constructStreamUrl = (ip: string, port: string) => {
-  // Ensure we're using HTTP protocol and strip any existing protocol
-  const cleanIp = ip.replace(/^https?:\/\//, '')
-  return `http://${cleanIp}:${port}/live/0/mjpeg.jpg`
+  // Remove any existing protocol and clean up the IP
+  const cleanIp = ip.replace(/^https?:\/\//, '').trim()
+  // Force HTTP protocol and ensure proper URL format
+  const streamUrl = `http://${cleanIp}:${port}/live/0/mjpeg.jpg`
+  return streamUrl.toLowerCase()
 } 
