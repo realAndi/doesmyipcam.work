@@ -1,5 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
 
+export const runtime = 'edge' // Use edge runtime for better streaming support
+export const dynamic = 'force-dynamic' // Disable caching
+
 export async function GET(req: NextRequest) {
   const searchParams = req.nextUrl.searchParams
   const url = searchParams.get('url')
@@ -11,7 +14,9 @@ export async function GET(req: NextRequest) {
   try {
     const response = await fetch(url, {
       headers: {
-        'Accept': 'multipart/x-mixed-replace;boundary=myboundary'
+        'Accept': 'multipart/x-mixed-replace;boundary=myboundary',
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache'
       }
     })
 
@@ -24,9 +29,11 @@ export async function GET(req: NextRequest) {
       status: response.status,
       headers: {
         'Content-Type': response.headers.get('Content-Type') || 'multipart/x-mixed-replace;boundary=myboundary',
-        'Cache-Control': 'no-cache',
+        'Cache-Control': 'no-store, no-cache, must-revalidate, proxy-revalidate',
         'Connection': 'keep-alive',
-        'Pragma': 'no-cache'
+        'Pragma': 'no-cache',
+        'Expires': '0',
+        'Surrogate-Control': 'no-store'
       }
     })
   } catch (error) {
