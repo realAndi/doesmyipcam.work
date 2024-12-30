@@ -2,7 +2,7 @@
 
 A Progressive Web App (PWA) optimized for mobile devices to view Sharx SCNC IP cameras via MJPEG streams. Built with modern web technologies and a focus on user experience.
 
-### Written by AI
+### ReadMe Written by AI
 
 ## Features
 
@@ -10,6 +10,14 @@ A Progressive Web App (PWA) optimized for mobile devices to view Sharx SCNC IP c
 - 💾 Local storage for camera settings
 - 📲 PWA support for installation on mobile devices
 - 🎨 Modern, responsive UI
+
+## Security Note
+
+This application stores camera credentials locally in your browser's storage. While this provides convenience, please be aware:
+- Only use this app on trusted devices
+- Never share your browser data or device with untrusted parties
+- Consider using dedicated camera accounts with limited permissions
+- Regularly update your camera passwords
 
 ## Tech Stack
 

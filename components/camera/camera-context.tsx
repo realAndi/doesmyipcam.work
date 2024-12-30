@@ -39,7 +39,7 @@ function generateUUID(): string {
 function getUUID(): string {
   try {
     return crypto.randomUUID()
-  } catch (e) {
+  } catch {
     return generateUUID()
   }
 }

@@ -1,10 +1,11 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import { useState } from "react"
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
 import type { Camera } from "./camera-context"
+import Image from "next/image"
 
 interface CameraViewerProps {
   camera: Camera
@@ -60,12 +61,15 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
             {error}
           </div>
         )}
-        <img
+        <Image
           src={getStreamUrl()}
           alt={`${camera.name} stream`}
           className="w-full h-full object-contain"
           onError={handleImageError}
           onLoad={handleImageLoad}
+          width={640}
+          height={360}
+          unoptimized
         />
       </CardContent>
     </Card>
