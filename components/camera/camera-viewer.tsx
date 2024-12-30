@@ -26,11 +26,10 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
     setIsLoading(false)
   }
 
-  // Add authentication to the URL
+  // Add authentication directly to the URL
   const getStreamUrl = () => {
     const auth = Buffer.from(`${camera.username}:${camera.password}`).toString('base64')
-    const targetUrl = camera.streamUrl + (camera.streamUrl.includes('?') ? '&' : '?') + `basic=${auth}`
-    return `/api/proxy?url=${encodeURIComponent(targetUrl)}`
+    return `${camera.streamUrl}?basic=${auth}`
   }
 
   return (
