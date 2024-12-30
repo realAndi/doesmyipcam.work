@@ -9,18 +9,37 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@cycjimmy/jsmpeg-player": "^6.1.2",
+    "@jellyfish-dev/react-client-sdk": "^0.3.1",
+    "@radix-ui/react-dialog": "^1.1.4",
+    "@radix-ui/react-label": "^2.1.1",
+    "@radix-ui/react-slot": "^1.1.1",
+    "@radix-ui/react-switch": "^1.1.2",
+    "class-variance-authority": "^0.7.1",
+    "clsx": "^2.1.1",
+    "cors": "^2.8.5",
+    "express": "^4.21.2",
+    "express-ws": "^5.0.2",
+    "hls.js": "^1.5.18",
+    "lucide-react": "^0.469.0",
+    "next": "14.2.16",
+    "next-themes": "^0.4.4",
+    "node-rtsp-stream": "^0.0.9",
     "react": "^18",
     "react-dom": "^18",
-    "next": "14.2.16"
+    "tailwind-merge": "^2.6.0",
+    "tailwindcss-animate": "^1.0.7",
+    "ws": "^8.18.0"
   },
   "devDependencies": {
-    "typescript": "^5",
     "@types/node": "^20",
     "@types/react": "^18",
     "@types/react-dom": "^18",
+    "@types/ws": "^8.5.13",
+    "eslint": "^8",
+    "eslint-config-next": "14.2.16",
     "postcss": "^8",
     "tailwindcss": "^3.4.1",
-    "eslint": "^8",
-    "eslint-config-next": "14.2.16"
+    "typescript": "^5"
   }
 }

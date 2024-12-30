@@ -1,36 +1,82 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SharxCamViewerPWA
+
+A Progressive Web App (PWA) optimized for mobile devices to view Sharx SCNC IP cameras via MJPEG streams. Built with modern web technologies and a focus on user experience.
+
+### Written by AI
+
+## Features
+
+- 🎥 MJPEG stream support for Sharx SCNC cameras
+- 💾 Local storage for camera settings
+- 📲 PWA support for installation on mobile devices
+- 🎨 Modern, responsive UI
+
+## Tech Stack
+
+- **Framework**: [Next.js 14](https://nextjs.org/) with App Router
+- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
+- **UI Components**: [shadcn/ui](https://ui.shadcn.com/)
+- **Icons**: [Lucide Icons](https://lucide.dev/)
+- **State Management**: React Context
+- **Type Safety**: TypeScript
 
 ## Getting Started
 
-First, run the development server:
-
+1. Clone the repository
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+git clone https://github.com/realandi/ipcam-viewer.git
+cd ipcam-viewer
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+2. Install dependencies
+```bash
+npm install
+```
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+3. Run the development server
+```bash
+npm run dev
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+4. Open [http://localhost:3000](http://localhost:3000) with your browser
 
-## Learn More
+## Usage
 
-To learn more about Next.js, take a look at the following resources:
+1. Add a camera by clicking the "Add Camera" button
+2. Enter your camera details:
+   - Camera Name
+   - IP Address
+   - Port
+   - Username
+   - Password
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+3. View your camera stream in the cameras page
+4. Manage cameras and settings in the settings page
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## Project Structure
 
-## Deploy on Vercel
+```
+├── app/                  # Next.js app router pages
+├── components/          
+│   ├── camera/          # Camera-related components
+│   ├── layout/          # Layout components
+│   └── ui/              # shadcn/ui components
+├── lib/                 # Utility functions
+└── public/              # Static assets and PWA manifest
+```
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## Future Features
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- [ ] RTSP stream support
+- [ ] Multiple camera layouts
+- [ ] Camera PTZ controls
+- [ ] Motion detection alerts
+- [ ] Camera settings management
+
+## Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
+
+## License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
