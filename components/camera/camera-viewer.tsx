@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Trash2 } from "lucide-react"
 import { Camera } from "./camera-context"
-import { useEffect, useState, useRef } from "react"
+import { useEffect, useState } from "react"
 
 interface CameraViewerProps {
   camera: Camera
@@ -14,44 +14,13 @@ interface CameraViewerProps {
 export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
   const [streamError, setStreamError] = useState(false)
   const [streamUrl, setStreamUrl] = useState("")
-  const retryTimeoutRef = useRef<NodeJS.Timeout>()
-  const imgRef = useRef<HTMLImageElement>(null)
 
   useEffect(() => {
-    const setupStream = () => {
-      // Add timestamp to prevent caching
-      const proxyUrl = `/api/stream?url=${encodeURIComponent(camera.streamUrl)}&t=${Date.now()}`
-      console.log('Using proxied stream URL:', proxyUrl)
-      setStreamUrl(proxyUrl)
-      setStreamError(false)
-    }
-
-    setupStream()
-
-    // Cleanup function
-    return () => {
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current)
-      }
-    }
+    // Use our proxy endpoint
+    const proxyUrl = `/api/stream?url=${encodeURIComponent(camera.streamUrl)}`
+    console.log('Using proxied stream URL:', proxyUrl)
+    setStreamUrl(proxyUrl)
   }, [camera.streamUrl])
-
-  const handleStreamError = () => {
-    console.error('Stream error, attempting to reconnect...')
-    setStreamError(true)
-    
-    // Clear any existing retry timeout
-    if (retryTimeoutRef.current) {
-      clearTimeout(retryTimeoutRef.current)
-    }
-    
-    // Attempt to reconnect after 5 seconds
-    retryTimeoutRef.current = setTimeout(() => {
-      console.log('Attempting to reconnect stream...')
-      setStreamUrl(prev => `${prev.split('&t=')[0]}&t=${Date.now()}`)
-      setStreamError(false)
-    }, 5000)
-  }
 
   return (
     <Card>
@@ -72,21 +41,22 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
       <CardContent className="p-0 space-y-4 relative">
         <div className="relative w-full aspect-video">
           {streamUrl && (
-            // eslint-disable-next-line @next/next/no-img-element
             <img
-              ref={imgRef}
               src={streamUrl}
               alt={`Stream from ${camera.name}`}
               className="w-full h-full object-cover rounded-md bg-muted"
-              onError={handleStreamError}
+              onError={() => {
+                console.error('Stream error for URL:', streamUrl)
+                setStreamError(true)
+              }}
             />
           )}
         </div>
         {streamError && (
           <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-sm text-destructive text-center p-4 bg-background/80 rounded-md">
-              Connection lost. Attempting to reconnect...<br/>
-              Please wait or check your camera settings.
+            <div className="text-sm text-destructive text-center p-4">
+              Unable to access camera stream.<br/>
+              Please check your camera settings and try again.
             </div>
           </div>
         )}
