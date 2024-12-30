@@ -32,7 +32,7 @@ export function CamerasView() {
               <div className="mt-2 text-sm">
                 Make sure you have:
                 <ul className="list-disc list-inside mt-1 space-y-1">
-                  <li>Your camera's IP address and port</li>
+                  <li>Your camera&apos;s IP address and port</li>
                   <li>Login credentials (username and password)</li>
                   <li>Camera powered on and connected to your network</li>
                 </ul>

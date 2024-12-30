@@ -1,6 +1,6 @@
 "use client"
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { AddCameraDialog } from "@/components/camera/add-camera-dialog"
 import { CameraViewer } from "@/components/camera/camera-viewer"
 import { useCameras } from "@/components/camera/camera-context"
@@ -10,7 +10,7 @@ export default function CamerasPage() {
 
   return (
     <div className="container mx-auto px-4 md:px-8 lg:px-12 xl:px-16 2xl:px-24 py-6 space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-row justify-between items-center md:flex-col md:items-start gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Your Cameras</h1>
           <p className="text-muted-foreground mt-1">
@@ -32,7 +32,7 @@ export default function CamerasPage() {
               <div className="mt-2 text-sm">
                 Make sure you have:
                 <ul className="list-disc list-inside mt-1 space-y-1">
-                  <li>Your camera's IP address and port</li>
+                  <li>Your camera&apos;s IP address and port</li>
                   <li>Login credentials (username and password)</li>
                   <li>Camera powered on and connected to your network</li>
                 </ul>
