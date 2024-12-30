@@ -26,22 +26,6 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
       setStreamError(false)
     }
 
-    const handleStreamError = () => {
-      console.error('Stream error, attempting to reconnect...')
-      setStreamError(true)
-      
-      // Clear any existing retry timeout
-      if (retryTimeoutRef.current) {
-        clearTimeout(retryTimeoutRef.current)
-      }
-      
-      // Attempt to reconnect after 5 seconds
-      retryTimeoutRef.current = setTimeout(() => {
-        console.log('Attempting to reconnect stream...')
-        setupStream()
-      }, 5000)
-    }
-
     setupStream()
 
     // Cleanup function
@@ -51,6 +35,23 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
       }
     }
   }, [camera.streamUrl])
+
+  const handleStreamError = () => {
+    console.error('Stream error, attempting to reconnect...')
+    setStreamError(true)
+    
+    // Clear any existing retry timeout
+    if (retryTimeoutRef.current) {
+      clearTimeout(retryTimeoutRef.current)
+    }
+    
+    // Attempt to reconnect after 5 seconds
+    retryTimeoutRef.current = setTimeout(() => {
+      console.log('Attempting to reconnect stream...')
+      setStreamUrl(prev => `${prev.split('&t=')[0]}&t=${Date.now()}`)
+      setStreamError(false)
+    }, 5000)
+  }
 
   return (
     <Card>
@@ -71,15 +72,13 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
       <CardContent className="p-0 space-y-4 relative">
         <div className="relative w-full aspect-video">
           {streamUrl && (
+            // eslint-disable-next-line @next/next/no-img-element
             <img
               ref={imgRef}
               src={streamUrl}
               alt={`Stream from ${camera.name}`}
               className="w-full h-full object-cover rounded-md bg-muted"
-              onError={() => {
-                console.error('Stream error for URL:', streamUrl)
-                setStreamError(true)
-              }}
+              onError={handleStreamError}
             />
           )}
         </div>
