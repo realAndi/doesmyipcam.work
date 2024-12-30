@@ -14,7 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table"
 
-export default function SettingsPage() {
+export function SettingsView() {
   const { cameras } = useCameras()
 
   return (

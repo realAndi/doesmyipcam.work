@@ -4,13 +4,30 @@ import { useTheme } from "next-themes"
 import { useEffect } from "react"
 
 export function ThemeColorScript() {
-  const { theme, systemTheme } = useTheme()
+  const { resolvedTheme } = useTheme()
 
   useEffect(() => {
-    const currentTheme = theme === "system" ? systemTheme : theme
-    const themeColor = currentTheme === "dark" ? "#000000" : "#ffffff"
-    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", themeColor)
-  }, [theme, systemTheme])
+    const meta = document.querySelector('meta[name="theme-color"]')
+    if (meta) {
+      const color = resolvedTheme === 'dark' ? '#000000' : '#ffffff'
+      meta.setAttribute('content', color)
+      
+      // Add transition style
+      const style = document.createElement('style')
+      style.textContent = `
+        @property --theme-color {
+          syntax: '<color>';
+          initial-value: ${color};
+          inherits: false;
+        }
+        
+        meta[name="theme-color"] {
+          transition: content 0.15s ease;
+        }
+      `
+      document.head.appendChild(style)
+    }
+  }, [resolvedTheme])
 
   return null
 } 

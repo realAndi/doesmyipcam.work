@@ -1,16 +1,16 @@
 "use client"
 
-import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card"
+import { Card, CardHeader, CardTitle } from "@/components/ui/card"
 import { AddCameraDialog } from "@/components/camera/add-camera-dialog"
 import { CameraViewer } from "@/components/camera/camera-viewer"
 import { useCameras } from "@/components/camera/camera-context"
 
-export default function CamerasPage() {
+export function CamerasView() {
   const { cameras, removeCamera } = useCameras()
 
   return (
     <div className="container mx-auto px-4 md:px-8 lg:px-12 xl:px-16 2xl:px-24 py-6 space-y-6">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+      <div className="flex flex-row justify-between items-center md:flex-col md:items-start gap-4">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Your Cameras</h1>
           <p className="text-muted-foreground mt-1">

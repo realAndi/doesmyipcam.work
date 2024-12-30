@@ -1,7 +1,8 @@
 {
-  "name": "ipcam-viewer",
+  "name": "doesmyipcam-work",
   "version": "0.1.0",
   "private": true,
+  "description": "A simple, secure way to view your Sharx SCNC IP cameras from any device",
   "scripts": {
     "dev": "next dev",
     "build": "next build",

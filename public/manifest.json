@@ -1,7 +1,7 @@
 {
-  "name": "IP Camera Viewer",
-  "short_name": "IPCam",
-  "description": "A mobile-friendly IP camera viewing application",
+  "name": "Does My IP Cam Work?",
+  "short_name": "IPCam Check",
+  "description": "A simple, secure way to view your Sharx SCNC IP cameras from any device",
   "start_url": "/",
   "display": "standalone",
   "background_color": "#ffffff",
