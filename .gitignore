@@ -34,3 +34,13 @@ yarn-error.log*
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# video streams and segments
+/streams/
+*.ts.bak
+*.m3u8
+*.ts
+!*.d.ts
+!app/**/*.ts
+!components/**/*.ts
+!lib/**/*.ts
