@@ -23,6 +23,7 @@
     "express-ws": "^5.0.2",
     "hls.js": "^1.5.18",
     "lucide-react": "^0.469.0",
+    "mjpeg-proxy": "^0.3.0",
     "next": "14.2.16",
     "next-themes": "^0.4.4",
     "node-rtsp-stream": "^0.0.9",
