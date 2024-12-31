@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { CameraProvider } from "@/components/camera/camera-context";
 import { ThemeColorScript } from "@/components/theme-color-script";
+import { cn } from "@/lib/utils";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -45,13 +46,9 @@ export default function RootLayout({
         <link rel="apple-touch-icon-precomposed" href="/pwa/appicon.png" />
         <link rel="icon" type="image/png" sizes="512x512" href="/pwa/appicon.png" />
       </head>
-      <body className={inter.className}>
-        <ThemeProvider
-          attribute="class"
-          defaultTheme="system"
-          enableSystem
-          disableTransitionOnChange={false}
-        >
+      <body className={cn("min-h-screen bg-background antialiased relative", inter.className)}>
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_bottom_right,_var(--tw-gradient-stops))] from-muted/25 via-background to-background -z-10" />
+        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <CameraProvider>
             <ThemeColorScript />
             <div className="fixed inset-0 bg-[radial-gradient(circle_at_bottom_right,hsl(var(--accent)))_0%,transparent_70%)] opacity-20 pointer-events-none" />

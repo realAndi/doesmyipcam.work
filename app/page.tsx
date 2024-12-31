@@ -1,36 +1,49 @@
 "use client"
 
-import { useState } from "react"
+import { LandingView } from "@/components/views/landing-view"
 import { CamerasView } from "@/components/views/cameras-view"
 import { SettingsView } from "@/components/views/settings-view"
-import { LandingView } from "@/components/views/landing-view"
+import { useEffect, useState } from "react"
+import { getDefaultView } from "@/lib/default-view"
 import { Nav } from "@/components/nav"
 import { View } from "@/lib/types"
 
-export default function HomePage() {
-  const [currentView, setCurrentView] = useState<View>("landing")
+export default function Home() {
+  const [isLoading, setIsLoading] = useState(true)
+  const [view, setView] = useState<View>('landing')
 
-  const handleViewChange = (view: View) => {
-    if (view !== currentView) {
-      setCurrentView(view)
-    }
+  useEffect(() => {
+    // Small delay to prevent hydration issues
+    const timer = setTimeout(() => {
+      setView(getDefaultView())
+      setIsLoading(false)
+    }, 100)
+
+    return () => clearTimeout(timer)
+  }, [])
+
+  // Handle view changes
+  const handleViewChange = (newView: View) => {
+    setView(newView)
   }
 
-  const renderView = () => {
-    switch (currentView) {
-      case "landing":
-        return <LandingView onGetStarted={() => handleViewChange("cameras")} />
-      case "cameras":
-        return <CamerasView />
-      case "settings":
-        return <SettingsView />
-    }
+  // Show nothing while loading to prevent flash
+  if (isLoading) {
+    return null
   }
 
   return (
     <>
-      <Nav currentView={currentView} onViewChange={handleViewChange} />
-      {renderView()}
+      <Nav currentView={view} onViewChange={handleViewChange} />
+      {view === 'landing' && (
+        <LandingView onGetStarted={() => handleViewChange('cameras')} />
+      )}
+      {view === 'cameras' && (
+        <CamerasView />
+      )}
+      {view === 'settings' && (
+        <SettingsView />
+      )}
     </>
   )
 }
