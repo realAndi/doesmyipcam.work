@@ -19,12 +19,7 @@ const links = [
     name: "Settings",
     view: "settings" as const,
     icon: Settings,
-  },
-  {
-    name: "Dev Tools",
-    view: "dev" as const,
-    icon: Code,
-  },
+  }
 ]
 
 export function Nav({ currentView, onViewChange }: NavProps) {

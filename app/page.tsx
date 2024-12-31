@@ -4,7 +4,6 @@ import { useState } from "react"
 import { CamerasView } from "@/components/views/cameras-view"
 import { SettingsView } from "@/components/views/settings-view"
 import { LandingView } from "@/components/views/landing-view"
-import { DevView } from "@/components/views/dev-view"
 import { Nav } from "@/components/nav"
 import { View } from "@/lib/types"
 
@@ -25,8 +24,6 @@ export default function HomePage() {
         return <CamerasView />
       case "settings":
         return <SettingsView />
-      case "dev":
-        return <DevView />
     }
   }
 

@@ -58,7 +58,7 @@ export function DevView() {
 
       // Start playing
       await videoRef.current.play()
-        .catch((error: any) => {
+        .catch((error: Error) => {
           console.error('Playback error:', error)
           setError(`Playback failed: ${error.message || 'Unknown error'}`)
         });

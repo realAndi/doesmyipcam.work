@@ -5,7 +5,6 @@ import { Button } from "@/components/ui/button"
 import { Trash2, Maximize2, RotateCw, X } from "lucide-react"
 import { Camera } from "./camera-context"
 import { useEffect, useRef, useState, useCallback } from "react"
-import Image from "next/image"
 
 interface CameraViewerProps {
   camera: Camera
@@ -42,9 +41,9 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
     setRotation((prev) => (prev + 180) % 360)
   }
 
-  const getMjpegUrl = (index: number) => {
+  const getMjpegUrl = useCallback((index: number) => {
     return `http://${camera.ip}:${camera.port}/live/${index}/mjpeg.jpg`
-  }
+  }, [camera.ip, camera.port])
 
   const tryMjpegStream = useCallback((imgEl: HTMLImageElement, retryCount = 0) => {
     // Clear any existing timeout
@@ -79,7 +78,6 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
       setStreamError(null)
       retryCountRef.current = 0
       
-      // Start with stream 0
       tryMjpegStream(imgEl)
       
       // Handle load success

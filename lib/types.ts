@@ -1,1 +1,1 @@
-export type View = "landing" | "cameras" | "settings" | "dev" 
+export type View = "landing" | "cameras" | "settings" 
