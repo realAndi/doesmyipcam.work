@@ -98,7 +98,7 @@ export function LandingView({ onGetStarted }: LandingViewProps) {
                   <Router className="w-5 h-5 text-muted-foreground" />
                 </div>
                 <div className="flex-1 space-y-1">
-                  <p className="font-medium">Find Your Camera's Gateway IP</p>
+                  <p className="font-medium">Find Your Camera&apos;s Gateway IP</p>
                   <p className="text-sm text-muted-foreground">Access your camera through its gateway IP address (e.g., 192.168.1.X)</p>
                 </div>
               </div>
@@ -108,7 +108,7 @@ export function LandingView({ onGetStarted }: LandingViewProps) {
                 </div>
                 <div className="flex-1 space-y-1">
                   <p className="font-medium">Add Your Camera</p>
-                  <p className="text-sm text-muted-foreground">Click the "Add Camera" button and enter your camera's details</p>
+                  <p className="text-sm text-muted-foreground">Click the &quot;Add Camera&quot; button and enter your camera&apos;s details</p>
                 </div>
               </div>
             </div>

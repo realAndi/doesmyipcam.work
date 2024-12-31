@@ -1,90 +1,47 @@
-# SharxCamViewerPWA
+# IP Cam Viewer
 
-A Progressive Web App (PWA) optimized for mobile devices to view Sharx SCNC IP cameras via MJPEG streams. Built with modern web technologies and a focus on user experience.
-
-### ReadMe Written by AI
+A simple, secure way to view your Sharx SCNC IP cameras from any device. Built with Next.js and Tailwind CSS.
 
 ## Features
 
-- 🎥 MJPEG stream support for Sharx SCNC cameras
+- 🔒 Secure HTTPS streaming
+- 📱 Progressive Web App (PWA) support
+- 🎥 Dual streaming options:
+  - MJPEG: Fast refresh rate with minimal delay
+  - HLS (m3u8): Native video player with audio support
+- 🌓 Dark/Light mode
 - 💾 Local storage for camera settings
-- 📲 PWA support for installation on mobile devices
-- 🎨 Modern, responsive UI
-
-## Security Note
-
-This application stores camera credentials locally in your browser's storage. While this provides convenience, please be aware:
-- Only use this app on trusted devices
-- Never share your browser data or device with untrusted parties
-- Consider using dedicated camera accounts with limited permissions
-- Regularly update your camera passwords
-
-## Tech Stack
-
-- **Framework**: [Next.js 14](https://nextjs.org/) with App Router
-- **Styling**: [Tailwind CSS](https://tailwindcss.com/)
-- **UI Components**: [shadcn/ui](https://ui.shadcn.com/)
-- **Icons**: [Lucide Icons](https://lucide.dev/)
-- **State Management**: React Context
-- **Type Safety**: TypeScript
+- 📱 Mobile-optimized with fullscreen support
+- 🔐 Credentials stored locally, never transmitted
 
 ## Getting Started
 
-1. Clone the repository
-```bash
-git clone https://github.com/realandi/ipcam-viewer.git
-cd ipcam-viewer
-```
+1. Access your Sharx SCNC camera through its gateway IP address (e.g., 192.168.1.X)
+2. Add your camera using the "Add Camera" button
+3. Choose your preferred stream type:
+   - MJPEG for faster refresh rates and lower latency
+   - HLS for audio support and native video controls
 
-2. Install dependencies
+## Installation
+
+For the best experience on mobile devices:
+1. Open the site in your default browser
+2. Install as a PWA when prompted
+3. Enjoy offline support and faster loading times
+
+## Development
+
 ```bash
 npm install
-```
-
-3. Run the development server
-```bash
 npm run dev
 ```
 
-4. Open [http://localhost:3000](http://localhost:3000) with your browser
+## Security
 
-## Usage
-
-1. Add a camera by clicking the "Add Camera" button
-2. Enter your camera details:
-   - Camera Name
-   - IP Address
-   - Port
-   - Username
-   - Password
-
-3. View your camera stream in the cameras page
-4. Manage cameras and settings in the settings page
-
-## Project Structure
-
-```
-├── app/                  # Next.js app router pages
-├── components/          
-│   ├── camera/          # Camera-related components
-│   ├── layout/          # Layout components
-│   └── ui/              # shadcn/ui components
-├── lib/                 # Utility functions
-└── public/              # Static assets and PWA manifest
-```
-
-## Future Features
-
-- [ ] RTSP stream support
-- [ ] Multiple camera layouts
-- [ ] Camera PTZ controls
-- [ ] Motion detection alerts
-- [ ] Camera settings management
-
-## Contributing
-
-Contributions are welcome! Please feel free to submit a Pull Request.
+- All camera credentials are stored locally in your browser
+- No data is transmitted to external servers
+- HTTPS ensures secure communication with your cameras
 
 ## License
 
-This project is licensed under the MIT License - see the LICENSE file for details.
+MIT
