@@ -1,0 +1,1 @@
+export type View = "landing" | "cameras" | "settings" | "dev" 

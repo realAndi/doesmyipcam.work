@@ -15,6 +15,8 @@ import { Label } from "@/components/ui/label"
 import { useState } from "react"
 import { useCameras } from "./camera-context"
 import { Plus } from "lucide-react"
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
+import { Loader2 } from "lucide-react"
 
 export function AddCameraDialog() {
   const [open, setOpen] = useState(false)
@@ -24,15 +26,17 @@ export function AddCameraDialog() {
   const [port, setPort] = useState("")
   const [username, setUsername] = useState("")
   const [password, setPassword] = useState("")
+  const [streamType, setStreamType] = useState<"hls" | "mjpeg">("hls")
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
     addCamera({
       name,
       ip,
-      port,
+      port: parseInt(port),
       username,
       password,
+      streamType
     })
     setOpen(false)
     setName("")
@@ -109,6 +113,30 @@ export function AddCameraDialog() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
               />
+            </div>
+            <div className="space-y-2">
+              <Label>Stream Type</Label>
+              <RadioGroup
+                defaultValue="hls"
+                value={streamType}
+                onValueChange={(value) => setStreamType(value as "hls" | "mjpeg")}
+              >
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="hls" id="hls" />
+                  <Label htmlFor="hls" className="font-normal">
+                    HLS (Video Player with Audio)
+                  </Label>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <RadioGroupItem value="mjpeg" id="mjpeg" />
+                  <Label htmlFor="mjpeg" className="font-normal">
+                    MJPEG (Optimized Video, No Audio)
+                  </Label>
+                </div>
+              </RadioGroup>
+              <p className="text-sm text-muted-foreground mt-2">
+                HLS provides better quality with audio support, while MJPEG offers lower latency without audio.
+              </p>
             </div>
           </div>
           <DialogFooter>

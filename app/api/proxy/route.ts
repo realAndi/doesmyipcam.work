@@ -1,28 +1,59 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function POST(req: NextRequest) {
-  try {
-    const { url, username, password } = await req.json()
-    
-    if (!url) {
-      return NextResponse.json({ error: 'URL is required' }, { status: 400 })
-    }
+// Configure the runtime to use edge
+export const runtime = 'edge'
 
-    const auth = Buffer.from(`${username}:${password}`).toString('base64')
+export async function GET(request: NextRequest) {
+  const url = request.nextUrl.searchParams.get('url')
+  
+  if (!url) {
+    return NextResponse.json({ error: 'URL parameter is required' }, { status: 400 })
+  }
+
+  try {
     const response = await fetch(url, {
+      credentials: 'omit',
+      mode: 'cors',
       headers: {
-        'Authorization': `Basic ${auth}`
+        'Accept': 'application/x-mpegURL,application/vnd.apple.mpegurl,video/mp2t,video/mp4,*/*',
       }
     })
-
-    if (!response.ok) {
-      return NextResponse.json({ error: 'Failed to fetch stream' }, { status: response.status })
+    
+    const contentType = response.headers.get('content-type') || 'application/octet-stream'
+    
+    // Common security headers
+    const headers = {
+      'Content-Type': contentType,
+      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Range',
+      'Access-Control-Expose-Headers': 'Content-Range, Content-Length',
+      'Cross-Origin-Resource-Policy': 'cross-origin',
+      'Cross-Origin-Embedder-Policy': 'unsafe-none',
+      'Cross-Origin-Opener-Policy': 'unsafe-none',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache',
+      'Expires': '0',
     }
 
-    // Forward the response headers and body
-    const headers = new Headers(response.headers)
-    headers.set('Access-Control-Allow-Origin', '*')
+    // Handle m3u8 playlists
+    if (contentType.includes('application/vnd.apple.mpegurl') || 
+        contentType.includes('application/x-mpegURL')) {
+      const text = await response.text()
+      
+      // Rewrite relative and absolute URLs
+      const rewrittenText = text
+        .replace(/(https?:\/\/[^"\s]*)/g, (match) => `/api/proxy?url=${encodeURIComponent(match)}`)
+        .replace(/^(?!#)(?!\s*https?:\/\/)([\w\-\.\/]+\.ts)/gm, (match) => {
+          const baseUrl = new URL(url)
+          const absoluteUrl = new URL(match, baseUrl).toString()
+          return `/api/proxy?url=${encodeURIComponent(absoluteUrl)}`
+        })
 
+      return new NextResponse(rewrittenText, { headers })
+    }
+
+    // For video segments and other content, stream the response
     return new NextResponse(response.body, {
       status: response.status,
       statusText: response.statusText,
@@ -30,7 +61,7 @@ export async function POST(req: NextRequest) {
     })
   } catch (error) {
     console.error('Proxy error:', error)
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 })
+    return NextResponse.json({ error: 'Failed to proxy request' }, { status: 500 })
   }
 }
 
@@ -39,8 +70,9 @@ export async function OPTIONS() {
     status: 204,
     headers: {
       'Access-Control-Allow-Origin': '*',
-      'Access-Control-Allow-Methods': 'POST',
-      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Range',
+      'Access-Control-Expose-Headers': 'Content-Range, Content-Length',
     },
   })
 } 

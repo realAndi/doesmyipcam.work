@@ -6,17 +6,18 @@ export interface Camera {
   id: string
   name: string
   ip: string
-  port: string
+  port: number
   username: string
   password: string
+  streamType: "hls" | "mjpeg"
   streamUrl: string
-  streamType: "mjpeg" | "rtsp"
 }
 
 interface CameraContextType {
   cameras: Camera[]
-  addCamera: (camera: Omit<Camera, "id" | "streamUrl" | "streamType">) => void
+  addCamera: (camera: Omit<Camera, "id" | "streamUrl">) => void
   removeCamera: (id: string) => void
+  toggleStreamType: (id: string) => void
 }
 
 const CameraContext = createContext<CameraContextType | undefined>(undefined)
@@ -36,19 +37,34 @@ export function CameraProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem("cameras", JSON.stringify(cameras))
   }, [cameras])
 
-  const addCamera = (camera: Omit<Camera, "id" | "streamUrl" | "streamType">) => {
+  const addCamera = (camera: Omit<Camera, "id" | "streamUrl">) => {
     const id = crypto.randomUUID()
-    const streamUrl = constructStreamUrl(camera.ip, camera.port)
-    console.log('Constructed stream URL:', streamUrl)
-    setCameras([...cameras, { ...camera, id, streamUrl, streamType: "mjpeg" }])
+    const streamUrl = constructStreamUrl(camera.ip, camera.port.toString(), camera.streamType)
+    console.log('Adding camera with stream URL:', streamUrl)
+    setCameras([...cameras, { ...camera, id, streamUrl }])
   }
 
   const removeCamera = (id: string) => {
     setCameras(cameras.filter((c) => c.id !== id))
   }
 
+  const toggleStreamType = (id: string) => {
+    setCameras(cameras.map(camera => {
+      if (camera.id === id) {
+        const newStreamType = camera.streamType === "mjpeg" ? "hls" : "mjpeg"
+        const newStreamUrl = constructStreamUrl(camera.ip, camera.port.toString(), newStreamType)
+        return {
+          ...camera,
+          streamType: newStreamType,
+          streamUrl: newStreamUrl
+        }
+      }
+      return camera
+    }))
+  }
+
   return (
-    <CameraContext.Provider value={{ cameras, addCamera, removeCamera }}>
+    <CameraContext.Provider value={{ cameras, addCamera, removeCamera, toggleStreamType }}>
       {children}
     </CameraContext.Provider>
   )
@@ -62,10 +78,12 @@ export function useCameras() {
   return context
 }
 
-const constructStreamUrl = (ip: string, port: string) => {
+const constructStreamUrl = (ip: string, port: string, streamType: "hls" | "mjpeg") => {
   // Remove any existing protocol and clean up the IP
   const cleanIp = ip.replace(/^https?:\/\//, '').trim()
   // Force HTTP protocol and ensure proper URL format
-  const streamUrl = `http://${cleanIp}:${port}/live/0/mjpeg.jpg`
+  const streamUrl = streamType === "mjpeg" 
+    ? `http://${cleanIp}:${port}/live/0/mjpeg.jpg`
+    : `http://${cleanIp}:${port}/live/0/h264.m3u8`
   return streamUrl.toLowerCase()
 } 

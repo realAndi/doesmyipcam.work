@@ -54,7 +54,7 @@ export default function RootLayout({
         >
           <CameraProvider>
             <ThemeColorScript />
-            <div className="fixed inset-0 bg-[radial-gradient(circle_at_bottom_right,hsl(var(--accent))_0%,transparent_70%)] opacity-20 pointer-events-none" />
+            <div className="fixed inset-0 bg-[radial-gradient(circle_at_bottom_right,hsl(var(--accent)))_0%,transparent_70%)] opacity-20 pointer-events-none" />
             <main className="min-h-screen pb-24 md:pb-8 md:pt-20 overflow-x-hidden relative">
               {children}
             </main>

@@ -1,9 +1,8 @@
 "use client"
 
-import { Camera, Settings } from "lucide-react"
+import { Camera, Code, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
-
-type View = "landing" | "cameras" | "settings"
+import { View } from "@/lib/types"
 
 interface NavProps {
   currentView: View
@@ -20,6 +19,11 @@ const links = [
     name: "Settings",
     view: "settings" as const,
     icon: Settings,
+  },
+  {
+    name: "Dev Tools",
+    view: "dev" as const,
+    icon: Code,
   },
 ]
 
@@ -38,7 +42,7 @@ export function Nav({ currentView, onViewChange }: NavProps) {
           return (
             <button
               key={link.view}
-              onClick={() => onViewChange(link.view)}
+              onClick={() => onViewChange(link.view as View)}
               className={cn(
                 "flex items-center gap-2 px-8 py-2 rounded-full transition-colors",
                 "hover:bg-accent",
