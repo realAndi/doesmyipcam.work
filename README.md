@@ -1,4 +1,4 @@
-# IP Cam Viewer
+# DoesMyIpCam.Work
 
 A simple, secure way to view your Sharx SCNC IP cameras from any device. Built with Next.js and Tailwind CSS.
 
@@ -9,8 +9,7 @@ A simple, secure way to view your Sharx SCNC IP cameras from any device. Built w
 - 🎥 Dual streaming options:
   - MJPEG: Fast refresh rate with minimal delay
   - HLS (m3u8): Native video player with audio support
-- 🌓 Dark/Light mode
-- 💾 Local storage for camera settings
+- 🌓 Local storage for camera settings
 - 📱 Mobile-optimized with fullscreen support
 - 🔐 Credentials stored locally, never transmitted
 
@@ -27,7 +26,7 @@ A simple, secure way to view your Sharx SCNC IP cameras from any device. Built w
 For the best experience on mobile devices:
 1. Open the site in your default browser
 2. Install as a PWA when prompted
-3. Enjoy offline support and faster loading times
+3. Enjoy a native app-like experience with faster loading
 
 ## Development
 
