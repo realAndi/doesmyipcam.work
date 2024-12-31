@@ -42,8 +42,8 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
   }
 
   const getMjpegUrl = useCallback((index: number) => {
-    return `http://${camera.ip}:${camera.port}/live/${index}/mjpeg.jpg`
-  }, [camera.ip, camera.port])
+    return `/api/stream?ip=${camera.ip}&port=${camera.port}&path=/live/${index}/mjpeg.jpg&username=${encodeURIComponent(camera.username)}&password=${encodeURIComponent(camera.password)}`
+  }, [camera.ip, camera.port, camera.username, camera.password])
 
   const tryMjpegStream = useCallback((imgEl: HTMLImageElement, retryCount = 0) => {
     // Clear any existing timeout
@@ -53,12 +53,11 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
 
     const streamIndex = retryCount % 3 // Cycle through 0, 1, 2
     const mjpegUrl = getMjpegUrl(streamIndex)
-    const proxyUrl = `/api/proxy?url=${encodeURIComponent(mjpegUrl)}&username=${encodeURIComponent(camera.username)}&password=${encodeURIComponent(camera.password)}`
     
     console.log(`Trying MJPEG stream ${streamIndex} for camera ${camera.name}:`, mjpegUrl)
     
     // Set image source
-    imgEl.src = proxyUrl
+    imgEl.src = mjpegUrl
 
     // Set timeout for retry
     timeoutRef.current = setTimeout(() => {
@@ -129,49 +128,45 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
       setStreamError(null)
 
       try {
-        // Construct the HLS URL and proxy it
-        const hlsUrl = `http://${camera.ip}:${camera.port}/live/0/h264.m3u8`
-        const proxyUrl = `/api/proxy?url=${encodeURIComponent(hlsUrl)}&username=${encodeURIComponent(camera.username)}&password=${encodeURIComponent(camera.password)}`
-        
-        // Set video source
-        videoEl.src = proxyUrl
+        // Use proxy for HLS stream
+        const hlsUrl = `/api/stream?ip=${camera.ip}&port=${camera.port}&path=/live/0/h264.m3u8&username=${encodeURIComponent(camera.username)}&password=${encodeURIComponent(camera.password)}`
+        videoEl.src = hlsUrl
 
         // Handle errors
         videoEl.onerror = () => {
           const error = videoEl.error;
-          let errorMessage = 'Unknown error';
-          
-          if (error) {
+          if (error && error.code !== 0) { // Ignore abort errors
+            let errorMessage = 'Unknown error';
             switch (error.code) {
-              case 1:
-                errorMessage = 'The video loading was aborted';
-                break;
               case 2:
                 errorMessage = 'Network error while loading the video';
                 break;
               case 3:
-                errorMessage = 'Video decode failed - this might be due to an unsupported codec or format';
+                errorMessage = 'Video decode failed';
                 break;
               case 4:
                 errorMessage = 'The video is not supported';
                 break;
             }
             setStreamError(`${errorMessage} (Code: ${error.code})`);
+            setIsConnecting(false);
           }
+        };
+
+        // Handle successful load
+        videoEl.onloadeddata = () => {
           setIsConnecting(false);
+          setStreamError(null);
         };
 
         // Start playing
-        videoEl.play()
-          .then(() => {
-            setIsConnecting(false);
-            setStreamError(null);
-          })
-          .catch(error => {
+        videoEl.play().catch(error => {
+          if (error.name !== 'AbortError') {
             console.error('Playback error:', error);
             setStreamError(`Playback failed: ${error.message || 'Unknown error'}`);
-            setIsConnecting(false);
-          });
+          }
+          setIsConnecting(false);
+        });
 
       } catch (err) {
         console.error('Stream error:', err);
@@ -262,7 +257,7 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
               autoPlay
               muted
               controls
-              crossOrigin="anonymous"
+              crossOrigin="use-credentials"
             />
           )}
           {isConnecting && (
