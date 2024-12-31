@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Trash2, Maximize2, RotateCw, X } from "lucide-react"
 import { Camera } from "./camera-context"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useRef, useState, useCallback } from "react"
+import Image from "next/image"
 
 interface CameraViewerProps {
   camera: Camera
@@ -45,7 +46,7 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
     return `http://${camera.ip}:${camera.port}/live/${index}/mjpeg.jpg`
   }
 
-  const tryMjpegStream = (imgEl: HTMLImageElement, retryCount: number = 0) => {
+  const tryMjpegStream = useCallback((imgEl: HTMLImageElement, retryCount = 0) => {
     // Clear any existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
@@ -67,7 +68,7 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
         tryMjpegStream(imgEl, retryCount + 1)
       }
     }, 10000) // 10 seconds timeout
-  }
+  }, [camera.name, getMjpegUrl, isConnecting])
 
   useEffect(() => {
     if (camera.streamType === "mjpeg") {
@@ -219,12 +220,14 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
         >
           {camera.streamType === "mjpeg" ? (
             <>
-              <img
-                ref={imgRef}
-                className={`${isFullscreen ? 'w-screen h-auto max-h-screen' : 'w-full h-full'} object-contain transition-transform duration-300`}
-                style={{ transform: `rotate(${rotation}deg)` }}
-                alt={`${camera.name} stream`}
-              />
+              <div className={`relative ${isFullscreen ? 'w-screen h-auto max-h-screen' : 'w-full h-full'}`}>
+                <img
+                  ref={imgRef}
+                  className="object-contain transition-transform duration-300"
+                  style={{ transform: `rotate(${rotation}deg)` }}
+                  alt={`${camera.name} stream`}
+                />
+              </div>
               {isFullscreen && (
                 <div className="absolute top-4 right-4 flex gap-2 z-10" onClick={e => e.stopPropagation()}>
                   {isMobile && (

@@ -1,36 +1,20 @@
 import { NextRequest, NextResponse } from 'next/server'
 
-export async function GET(req: NextRequest) {
+export async function GET(request: NextRequest) {
+  const url = request.nextUrl.searchParams.get('url')
+  
+  if (!url) {
+    return NextResponse.json({ error: 'URL parameter is required' }, { status: 400 })
+  }
+
   try {
-    const url = req.nextUrl.searchParams.get('url')
-    if (!url) {
-      return new NextResponse('Missing URL parameter', { status: 400 })
-    }
-
-    // Prevent double-proxying
-    if (url.includes('/api/stream')) {
-      return new NextResponse('Invalid URL: Cannot proxy to proxy', { status: 400 })
-    }
-
-    // Handle relative URLs for .ts files
-    let fullUrl = url
-    if (url.endsWith('.ts') && !url.startsWith('http')) {
-      const baseUrl = req.nextUrl.searchParams.get('baseUrl')
-      if (!baseUrl) {
-        return new NextResponse('Missing baseUrl for relative .ts file', { status: 400 })
-      }
-      fullUrl = new URL(url, baseUrl).toString()
-    }
-
-    console.log('Proxying request for:', fullUrl)
-
-    const response = await fetch(fullUrl)
+    const response = await fetch(url)
     console.log('Response status:', response.status)
     console.log('Response headers:', Object.fromEntries(response.headers.entries()))
 
     if (!response.ok) {
       console.error('Fetch failed:', response.status, response.statusText)
-      return new NextResponse('Failed to fetch stream', { status: response.status })
+      return NextResponse.json({ error: 'Failed to fetch stream' }, { status: response.status })
     }
 
     const contentType = response.headers.get('content-type')
@@ -52,7 +36,7 @@ export async function GET(req: NextRequest) {
       console.log('Original M3U8 content:', text)
 
       // Get the base URL for the stream
-      const baseUrl = fullUrl.substring(0, fullUrl.lastIndexOf('/') + 1)
+      const baseUrl = url.substring(0, url.lastIndexOf('/') + 1)
       
       // Replace segment URLs with proxied URLs
       const modifiedContent = text.split('\n').map(line => {
@@ -98,9 +82,9 @@ export async function GET(req: NextRequest) {
         headers,
       })
     }
-  } catch (error) {
-    console.error('Stream proxy error:', error)
-    return new NextResponse('Internal Server Error', { status: 500 })
+  } catch (err) {
+    console.error('Stream error:', err)
+    return NextResponse.json({ error: 'Failed to proxy stream' }, { status: 500 })
   }
 }
 

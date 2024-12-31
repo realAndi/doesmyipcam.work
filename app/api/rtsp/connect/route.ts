@@ -4,12 +4,16 @@ import { spawn } from 'child_process'
 
 const streams = new Map()
 
-export async function POST(req: NextRequest) {
+export async function POST(req: Request) {
   try {
-    const { url } = await req.json()
-
+    const { url, username, password } = await req.json() as {
+      url: string;
+      username: string;
+      password: string;
+    }
+    
     if (!url) {
-      return new NextResponse('Missing RTSP URL', { status: 400 })
+      return NextResponse.json({ error: 'URL is required' }, { status: 400 })
     }
 
     // Create a unique stream ID
@@ -55,9 +59,9 @@ export async function POST(req: NextRequest) {
       streamId,
       wsUrl: `ws://${req.headers.get('host')?.split(':')[0]}:${port}`
     })
-  } catch (error) {
-    console.error('RTSP connection error:', error)
-    return new NextResponse('Failed to connect to RTSP stream', { status: 500 })
+  } catch (err) {
+    console.error('RTSP connection error:', err)
+    return NextResponse.json({ error: 'Failed to connect to RTSP stream' }, { status: 500 })
   }
 }
 

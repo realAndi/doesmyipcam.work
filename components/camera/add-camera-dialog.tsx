@@ -16,7 +16,6 @@ import { useState } from "react"
 import { useCameras } from "./camera-context"
 import { Plus } from "lucide-react"
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"
-import { Loader2 } from "lucide-react"
 
 export function AddCameraDialog() {
   const [open, setOpen] = useState(false)
