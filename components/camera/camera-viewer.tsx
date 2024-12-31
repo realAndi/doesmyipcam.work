@@ -34,11 +34,18 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
   }, [])
 
   const toggleFullscreen = async () => {
+    if (isMobile) {
+      // Only set initial rotation on mobile
+      setRotation(!isFullscreen ? 180 : 0);
+    }
     setIsFullscreen(!isFullscreen);
   }
 
   const rotateImage = () => {
-    setRotation(prev => prev === 0 ? 180 : 0);
+    // Only allow rotation on mobile
+    if (isMobile) {
+      setRotation(prev => prev === 180 ? 0 : 180);
+    }
   }
 
   const getMjpegUrl = useCallback((index: number) => {
@@ -49,24 +56,25 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
     // Clear any existing timeout
     if (timeoutRef.current) {
       clearTimeout(timeoutRef.current)
+      timeoutRef.current = undefined
     }
 
     const streamIndex = retryCount % 3 // Cycle through 0, 1, 2
     const mjpegUrl = getMjpegUrl(streamIndex)
     
-    console.log(`Trying MJPEG stream ${streamIndex} for camera ${camera.name}:`, mjpegUrl)
-    
     // Set image source
     imgEl.src = mjpegUrl
 
-    // Set timeout for retry
-    timeoutRef.current = setTimeout(() => {
-      if (isConnecting) { // Only retry if we're still connecting
-        console.log(`Stream ${streamIndex} timed out, trying next stream...`)
-        tryMjpegStream(imgEl, retryCount + 1)
-      }
-    }, 10000) // 10 seconds timeout
-  }, [camera.name, getMjpegUrl, isConnecting, camera.username, camera.password])
+    // Set timeout for retry only if we're still connecting
+    if (isConnecting) {
+      timeoutRef.current = setTimeout(() => {
+        if (isConnecting) { // Double check we're still connecting
+          console.log(`Stream ${streamIndex} timed out, trying next stream...`)
+          tryMjpegStream(imgEl, retryCount + 1)
+        }
+      }, 10000) // 10 seconds timeout
+    }
+  }, [getMjpegUrl, isConnecting])
 
   const setupMjpegStream = useCallback((imgEl: HTMLImageElement) => {
     setIsConnecting(true)
@@ -79,23 +87,27 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
     const handleLoad = () => {
       console.log(`Camera ${camera.name} MJPEG stream loaded successfully`);
       setIsConnecting(false);
+      // Clear any pending retries
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
+        timeoutRef.current = undefined
       }
     }
 
     // Handle errors
     const handleError = () => {
-      if (retryCountRef.current >= 8) {
+      // Only retry if we're still connecting and haven't exceeded retry limit
+      if (isConnecting && retryCountRef.current < 8) {
+        retryCountRef.current++
+        tryMjpegStream(imgEl, retryCountRef.current)
+      } else {
         console.error('MJPEG stream error after all retries');
         setStreamError('Failed to load MJPEG stream after multiple attempts');
         setIsConnecting(false);
         if (timeoutRef.current) {
           clearTimeout(timeoutRef.current)
+          timeoutRef.current = undefined
         }
-      } else {
-        retryCountRef.current++
-        tryMjpegStream(imgEl, retryCountRef.current)
       }
     }
 
@@ -105,12 +117,13 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
     return () => {
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
+        timeoutRef.current = undefined
       }
       imgEl.removeEventListener('load', handleLoad)
       imgEl.removeEventListener('error', handleError)
       imgEl.src = ''
     }
-  }, [camera.name, tryMjpegStream])
+  }, [camera.name, tryMjpegStream, isConnecting])
 
   useEffect(() => {
     if (camera.streamType === "mjpeg") {
@@ -205,25 +218,27 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
           {camera.streamType === "mjpeg" ? (
             <>
               <div className={`relative ${isFullscreen ? 'w-screen h-screen flex items-center justify-center bg-black' : 'w-full h-full'}`}>
-                <div className={isFullscreen ? 'absolute inset-0 flex items-center justify-center origin-center rotate-90' : ''}>
+                <div className={isFullscreen && isMobile ? 'absolute inset-0 flex items-center justify-center origin-center rotate-90' : ''}>
                   <img
                     ref={imgRef}
-                    className={`${isFullscreen ? ' max-h-screen' : 'w-full h-full object-contain'}`}
-                    style={isFullscreen ? { transform: `rotate(${rotation}deg)`, maxWidth: '100vh', maxHeight: '100vw' } : undefined}
+                    className={`${isFullscreen ? 'max-h-screen' : 'w-full h-full object-contain'}`}
+                    style={isFullscreen && isMobile ? { transform: `rotate(${rotation}deg)`, maxWidth: '100vh', maxHeight: '100vw' } : undefined}
                     alt={`${camera.name} stream`}
                   />
                 </div>
               </div>
               {isFullscreen && (
                 <div className="absolute top-4 right-4 flex gap-2 z-10" onClick={e => e.stopPropagation()}>
-                  <Button
-                    variant="secondary"
-                    size="icon"
-                    onClick={rotateImage}
-                    className="bg-black/50 hover:bg-black/70"
-                  >
-                    <RotateCw className="w-4 h-4" />
-                  </Button>
+                  {isMobile && (
+                    <Button
+                      variant="secondary"
+                      size="icon"
+                      onClick={rotateImage}
+                      className="bg-black/50 hover:bg-black/70"
+                    >
+                      <RotateCw className="w-4 h-4" />
+                    </Button>
+                  )}
                   <Button
                     variant="secondary"
                     size="icon"
