@@ -6,6 +6,12 @@ const config: Config = {
     "./pages/**/*.{js,ts,jsx,tsx,mdx}",
     "./components/**/*.{js,ts,jsx,tsx,mdx}",
     "./app/**/*.{js,ts,jsx,tsx,mdx}",
+    "./src/**/*.{ts,tsx}",
+  ],
+  safelist: [
+    'delay-[450ms]',
+    'delay-[600ms]',
+    'delay-[750ms]'
   ],
   theme: {
   	extend: {
@@ -59,5 +65,5 @@ const config: Config = {
   	}
   },
   plugins: [require("tailwindcss-animate")],
-};
+} satisfies Config;
 export default config;

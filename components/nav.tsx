@@ -1,6 +1,6 @@
 "use client"
 
-import { Camera, Code, Settings } from "lucide-react"
+import { Camera, Settings } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { View } from "@/lib/types"
 

@@ -69,52 +69,57 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
     }, 10000) // 10 seconds timeout
   }, [camera.name, getMjpegUrl, isConnecting])
 
+  const setupMjpegStream = useCallback((imgEl: HTMLImageElement) => {
+    setIsConnecting(true)
+    setStreamError(null)
+    retryCountRef.current = 0
+    
+    tryMjpegStream(imgEl)
+    
+    // Handle load success
+    const handleLoad = () => {
+      console.log(`Camera ${camera.name} MJPEG stream loaded successfully`);
+      setIsConnecting(false);
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+    }
+
+    // Handle errors
+    const handleError = () => {
+      if (retryCountRef.current >= 8) {
+        console.error('MJPEG stream error after all retries');
+        setStreamError('Failed to load MJPEG stream after multiple attempts');
+        setIsConnecting(false);
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current)
+        }
+      } else {
+        retryCountRef.current++
+        tryMjpegStream(imgEl, retryCountRef.current)
+      }
+    }
+
+    imgEl.addEventListener('load', handleLoad)
+    imgEl.addEventListener('error', handleError)
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current)
+      }
+      imgEl.removeEventListener('load', handleLoad)
+      imgEl.removeEventListener('error', handleError)
+      imgEl.src = ''
+    }
+  }, [camera.name, tryMjpegStream])
+
   useEffect(() => {
     if (camera.streamType === "mjpeg") {
       const imgEl = imgRef.current
       if (!imgEl) return
 
-      setIsConnecting(true)
-      setStreamError(null)
-      retryCountRef.current = 0
-      
-      tryMjpegStream(imgEl)
-      
-      // Handle load success
-      const handleLoad = () => {
-        console.log(`Camera ${camera.name} MJPEG stream loaded successfully`);
-        setIsConnecting(false);
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current)
-        }
-      }
-
-      // Handle errors
-      const handleError = () => {
-        if (retryCountRef.current >= 8) { // Try each stream up to 3 times (9 total attempts)
-          console.error('MJPEG stream error after all retries');
-          setStreamError('Failed to load MJPEG stream after multiple attempts');
-          setIsConnecting(false);
-          if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current)
-          }
-        } else {
-          retryCountRef.current++
-          tryMjpegStream(imgEl, retryCountRef.current)
-        }
-      }
-
-      imgEl.addEventListener('load', handleLoad)
-      imgEl.addEventListener('error', handleError)
-
-      return () => {
-        if (timeoutRef.current) {
-          clearTimeout(timeoutRef.current)
-        }
-        imgEl.removeEventListener('load', handleLoad)
-        imgEl.removeEventListener('error', handleError)
-        imgEl.src = ''
-      }
+      const cleanup = setupMjpegStream(imgEl)
+      return cleanup
     } else {
       // For HLS, we use the video element
       const videoEl = videoRef.current
@@ -192,7 +197,7 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
         videoEl.src = ''
       }
     }
-  }, [camera])
+  }, [camera, setupMjpegStream])
 
   return (
     <Card className={isFullscreen ? 'fixed inset-0 z-50 rounded-none' : ''}>
