@@ -71,14 +71,15 @@ export function StorageDialog({ open, onOpenChange, camera }: StorageDialogProps
   const fetchFiles = useCallback(async () => {
     try {
       setError(null)
-      const url = `http://${camera.ip}:${camera.port}/form/getStorageFileList`
       const params = new URLSearchParams({
-        url: url,
+        ip: camera.ip,
+        port: camera.port,
+        path: '/form/getStorageFileList',
         ...(camera.username && { username: camera.username }),
         ...(camera.password && { password: camera.password })
       })
 
-      const response = await fetch(`/api/storage?${params}`)
+      const response = await fetch(`/api/stream?${params}`)
       if (!response.ok) throw new Error('Failed to fetch storage files')
       
       const data = await response.json()
@@ -121,14 +122,15 @@ export function StorageDialog({ open, onOpenChange, camera }: StorageDialogProps
 
   const handleDownload = async (fileName: string) => {
     try {
-      const url = `http://${camera.ip}:${camera.port}/disk/IPCAMERA_Window/${fileName}`
       const params = new URLSearchParams({
-        url: url,
+        ip: camera.ip,
+        port: camera.port,
+        path: `/disk/IPCAMERA_Window/${fileName}`,
         ...(camera.username && { username: camera.username }),
         ...(camera.password && { password: camera.password })
       })
 
-      const response = await fetch(`/api/proxy?${params}`)
+      const response = await fetch(`/api/stream?${params}`)
       if (!response.ok) throw new Error('Failed to download file')
       
       const blob = await response.blob()

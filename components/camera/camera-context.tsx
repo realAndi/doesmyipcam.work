@@ -83,7 +83,7 @@ const constructStreamUrl = (ip: string, port: string, streamType: "hls" | "mjpeg
   const cleanIp = ip.replace(/^https?:\/\//, '').trim()
   // Force HTTP protocol and ensure proper URL format
   const streamUrl = streamType === "mjpeg" 
-    ? `http://${cleanIp}:${port}/live`
+    ? `http://${cleanIp}:${port}/live/0/mjpeg.jpg`
     : `http://${cleanIp}:${port}/live/0/h264.m3u8`
   return streamUrl.toLowerCase()
 } 
