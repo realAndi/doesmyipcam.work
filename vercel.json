@@ -3,11 +3,15 @@
     "app/api/proxy/route.ts": {
       "memory": 1024,
       "maxDuration": 60
+    },
+    "app/api/stream/route.ts": {
+      "memory": 1024,
+      "maxDuration": 60
     }
   },
   "headers": [
     {
-      "source": "/api/proxy",
+      "source": "/api/(proxy|stream)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -16,6 +20,10 @@
         {
           "key": "Access-Control-Allow-Origin",
           "value": "*"
+        },
+        {
+          "key": "Connection",
+          "value": "keep-alive"
         }
       ]
     }
