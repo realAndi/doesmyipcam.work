@@ -2,9 +2,20 @@
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
-import { Trash2, Maximize2, RotateCw, X } from "lucide-react"
+import { Trash2, Maximize2, RotateCw, X, FolderOpen } from "lucide-react"
 import { Camera } from "./camera-context"
 import { useEffect, useRef, useState, useCallback } from "react"
+import { StorageDialog } from './storage-dialog'
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog"
 
 interface CameraViewerProps {
   camera: Camera
@@ -22,6 +33,8 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
   const [isFullscreen, setIsFullscreen] = useState(false)
   const [rotation, setRotation] = useState(0)
   const [isMobile, setIsMobile] = useState(false)
+  const [showStorageDialog, setShowStorageDialog] = useState(false)
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
 
   // Check if device is mobile
   useEffect(() => {
@@ -81,30 +94,6 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
     setStreamError(null)
     retryCountRef.current = 0
     
-    // Create a new Image for preloading
-    const preloadImg = new Image()
-    let isPreloading = false
-
-    const preloadNextStream = () => {
-      if (isPreloading) return
-      isPreloading = true
-      
-      const streamIndex = retryCountRef.current % 3
-      const nextUrl = getMjpegUrl(streamIndex)
-      
-      preloadImg.src = nextUrl
-      preloadImg.onload = () => {
-        if (imgEl && !streamError) {
-          imgEl.src = nextUrl
-          isPreloading = false
-        }
-      }
-      preloadImg.onerror = () => {
-        isPreloading = false
-        handleError()
-      }
-    }
-    
     // Start initial stream
     tryMjpegStream(imgEl)
     
@@ -119,11 +108,13 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
         timeoutRef.current = undefined
       }
 
-      // Set up auto-reconnect timer
+      // Set up reconnect timer
       timeoutRef.current = setTimeout(() => {
         if (!streamError) {
-          console.log('Auto-reconnecting MJPEG stream...')
-          preloadNextStream()
+          console.log('Reconnecting MJPEG stream...')
+          // Just reload the current stream index
+          const streamIndex = retryCountRef.current % 3
+          imgEl.src = getMjpegUrl(streamIndex)
         }
       }, 9000) // Reconnect just before the 10s timeout
     }
@@ -153,7 +144,6 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
         clearTimeout(timeoutRef.current)
         timeoutRef.current = undefined
       }
-      preloadImg.src = ''
       imgEl.removeEventListener('load', handleLoad)
       imgEl.removeEventListener('error', handleError)
       imgEl.src = ''
@@ -234,15 +224,26 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
         <CardTitle className="text-base font-medium">
           {camera.name}
         </CardTitle>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="text-muted-foreground hover:text-destructive"
-          onClick={() => onDelete(camera.id)}
-        >
-          <Trash2 className="w-4 h-4" />
-          <span className="sr-only">Delete camera</span>
-        </Button>
+        <div className="flex gap-2">
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground hover:text-foreground"
+            onClick={() => setShowStorageDialog(true)}
+            title="View storage"
+          >
+            <FolderOpen className="h-4 w-4" />
+          </Button>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="text-muted-foreground hover:text-destructive"
+            onClick={() => setShowDeleteDialog(true)}
+            title="Delete camera"
+          >
+            <Trash2 className="h-4 w-4" />
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className={`${isFullscreen ? 'p-0 h-screen bg-black' : 'p-0 space-y-4'} relative`}>
         <div 
@@ -327,6 +328,40 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
           )}
         </div>
       </CardContent>
+
+      <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete Camera</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to delete {camera.name}? This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90 dark:text-white"
+              onClick={() => {
+                onDelete(camera.id)
+                setShowDeleteDialog(false)
+              }}
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      <StorageDialog
+        open={showStorageDialog}
+        onOpenChange={setShowStorageDialog}
+        camera={{
+          ip: camera.ip,
+          port: camera.port.toString(),
+          username: camera.username,
+          password: camera.password
+        }}
+      />
     </Card>
   )
 } 

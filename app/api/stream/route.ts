@@ -1,4 +1,67 @@
 import { NextRequest, NextResponse } from 'next/server'
+import { Socket } from 'net'
+
+async function getRawResponse(ip: string, port: string, path: string, auth: string): Promise<string> {
+  return new Promise((resolve, reject) => {
+    const socket = new Socket()
+    let response = ''
+
+    socket.connect(parseInt(port), ip, () => {
+      socket.write(
+        `GET ${path} HTTP/1.1\r\n` +
+        `Host: ${ip}:${port}\r\n` +
+        `Authorization: Basic ${auth}\r\n` +
+        `Connection: close\r\n\r\n`
+      )
+    })
+
+    socket.on('data', (data) => {
+      response += data.toString()
+    })
+
+    socket.on('end', () => {
+      // Try different response formats
+      // First try double CRLF
+      let bodyMatch = response.match(/\r\n\r\n([\s\S]+)$/)
+      if (!bodyMatch) {
+        // Try double LF
+        bodyMatch = response.match(/\n\n([\s\S]+)$/)
+      }
+      if (!bodyMatch) {
+        // Try single CRLF
+        bodyMatch = response.match(/\r\n([\s\S]+)$/)
+      }
+      if (!bodyMatch) {
+        // Try single LF
+        bodyMatch = response.match(/\n([\s\S]+)$/)
+      }
+      
+      if (bodyMatch) {
+        const body = bodyMatch[1].trim()
+        resolve(body)
+      } else {
+        // If no headers found, try using the entire response
+        if (response.trim()) {
+          console.log('Using entire response as body')
+          resolve(response.trim())
+        } else {
+          console.log('Invalid response format, response was:', response)
+          reject(new Error('Invalid response format'))
+        }
+      }
+    })
+
+    socket.on('error', (err) => {
+      reject(err)
+    })
+
+    // Set a timeout
+    socket.setTimeout(5000, () => {
+      socket.destroy()
+      reject(new Error('Connection timeout'))
+    })
+  })
+}
 
 export async function GET(request: NextRequest) {
   const ip = request.nextUrl.searchParams.get('ip')
@@ -12,9 +75,39 @@ export async function GET(request: NextRequest) {
   }
 
   try {
+    // Handle storage file list with raw TCP socket
+    if (path === '/form/getStorageFileList') {
+      const auth = Buffer.from(`${username}:${password}`).toString('base64')
+      const text = await getRawResponse(ip, port, path, auth)
+      
+      // Parse the response into JSON format
+      const files: { name: string; size: number }[] = []
+      const regex = /NAME(\d+)=([^\s]+)\s+SIZE\1=(\d+)/g
+      let match
+
+      while ((match = regex.exec(text)) !== null) {
+        files.push({
+          name: match[2],
+          size: parseInt(match[3], 10)
+        })
+      }
+
+      return NextResponse.json({
+        success: text.startsWith('000 Success'),
+        files
+      }, {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Cache-Control': 'no-cache, no-store, must-revalidate',
+        },
+        status: 200
+      })
+    }
+
+    // Rest of the existing code for other endpoints
     const url = `http://${ip}:${port}${path}`
     const headers: Record<string, string> = {
-      'Accept': 'application/x-mpegURL,application/vnd.apple.mpegurl,video/mp2t,video/mp4,image/jpeg,*/*',
+      'Accept': '*/*',
     }
 
     if (username && password) {
@@ -25,7 +118,6 @@ export async function GET(request: NextRequest) {
     const response = await fetch(url, {
       headers,
       credentials: 'omit',
-      mode: 'cors',
     })
 
     if (!response.ok) {
@@ -42,13 +134,20 @@ export async function GET(request: NextRequest) {
       'Access-Control-Allow-Headers': '*',
       'Access-Control-Allow-Credentials': 'true',
       'Access-Control-Expose-Headers': '*',
-      'Cross-Origin-Resource-Policy': 'cross-origin',
-      'Cross-Origin-Embedder-Policy': 'require-corp',
-      'Cross-Origin-Opener-Policy': 'same-origin',
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       'Pragma': 'no-cache',
       'Expires': '0',
     })
+
+    // Handle file downloads
+    if (path.startsWith('/disk/IPCAMERA_Window/')) {
+      responseHeaders.set('Content-Type', 'application/octet-stream')
+      responseHeaders.set('Content-Disposition', 'attachment')
+      return new NextResponse(response.body, {
+        headers: responseHeaders,
+        status: 200
+      })
+    }
 
     // Handle m3u8 playlists
     if (path.endsWith('.m3u8') || 
