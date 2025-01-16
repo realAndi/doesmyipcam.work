@@ -165,54 +165,71 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
       setIsConnecting(true)
       setStreamError(null)
 
-      try {
-        // Use proxy for HLS stream
-        const hlsUrl = `/api/stream?ip=${camera.ip}&port=${camera.port}&path=/live/0/h264.m3u8&username=${encodeURIComponent(camera.username)}&password=${encodeURIComponent(camera.password)}`
-        videoEl.src = hlsUrl
+      const setupHlsStream = () => {
+        try {
+          // Use proxy for HLS stream
+          const hlsUrl = `/api/stream?ip=${camera.ip}&port=${camera.port}&path=/live/0/h264.m3u8&username=${encodeURIComponent(camera.username)}&password=${encodeURIComponent(camera.password)}`
+          videoEl.src = hlsUrl
 
-        // Handle errors
-        videoEl.onerror = () => {
-          const error = videoEl.error;
-          if (error && error.code !== 0) { // Ignore abort errors
-            let errorMessage = 'Unknown error';
-            switch (error.code) {
-              case 2:
-                errorMessage = 'Network error while loading the video';
-                break;
-              case 3:
-                errorMessage = 'Video decode failed';
-                break;
-              case 4:
-                errorMessage = 'The video is not supported';
-                break;
+          // Handle errors
+          videoEl.onerror = () => {
+            const error = videoEl.error;
+            if (error && error.code !== 0) { // Ignore abort errors
+              let errorMessage = 'Unknown error';
+              switch (error.code) {
+                case 2:
+                  errorMessage = 'Network error while loading the video';
+                  break;
+                case 3:
+                  errorMessage = 'Video decode failed';
+                  break;
+                case 4:
+                  errorMessage = 'The video is not supported';
+                  break;
+              }
+              setStreamError(`${errorMessage} (Code: ${error.code})`);
+              setIsConnecting(false);
             }
-            setStreamError(`${errorMessage} (Code: ${error.code})`);
+          };
+
+          // Handle successful load
+          videoEl.onloadeddata = () => {
             setIsConnecting(false);
-          }
-        };
+            setStreamError(null);
+            
+            // Set up reconnect timer
+            if (timeoutRef.current) {
+              clearTimeout(timeoutRef.current)
+            }
+            timeoutRef.current = setTimeout(() => {
+              console.log('Reconnecting HLS stream...')
+              setupHlsStream()
+            }, 9000) // Reconnect just before the 10s timeout
+          };
 
-        // Handle successful load
-        videoEl.onloadeddata = () => {
+          // Start playing
+          videoEl.play().catch(error => {
+            if (error.name !== 'AbortError') {
+              console.error('Playback error:', error);
+              setStreamError(`Playback failed: ${error.message || 'Unknown error'}`);
+            }
+            setIsConnecting(false);
+          });
+
+        } catch (err) {
+          console.error('Stream error:', err);
+          setStreamError('Failed to load stream');
           setIsConnecting(false);
-          setStreamError(null);
-        };
-
-        // Start playing
-        videoEl.play().catch(error => {
-          if (error.name !== 'AbortError') {
-            console.error('Playback error:', error);
-            setStreamError(`Playback failed: ${error.message || 'Unknown error'}`);
-          }
-          setIsConnecting(false);
-        });
-
-      } catch (err) {
-        console.error('Stream error:', err);
-        setStreamError('Failed to load stream');
-        setIsConnecting(false);
+        }
       }
 
+      setupHlsStream()
+
       return () => {
+        if (timeoutRef.current) {
+          clearTimeout(timeoutRef.current)
+          timeoutRef.current = undefined
+        }
         videoEl.src = ''
       }
     }

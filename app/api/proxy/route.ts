@@ -19,7 +19,7 @@ export async function GET(request: NextRequest) {
     }
 
     if (username && password) {
-      const auth = Buffer.from(`${username}:${password}`).toString('base64')
+      const auth = btoa(`${username}:${password}`)
       headers['Authorization'] = `Basic ${auth}`
     }
 
