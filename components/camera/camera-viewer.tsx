@@ -81,17 +81,51 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
     setStreamError(null)
     retryCountRef.current = 0
     
+    // Create a new Image for preloading
+    const preloadImg = new Image()
+    let isPreloading = false
+
+    const preloadNextStream = () => {
+      if (isPreloading) return
+      isPreloading = true
+      
+      const streamIndex = retryCountRef.current % 3
+      const nextUrl = getMjpegUrl(streamIndex)
+      
+      preloadImg.src = nextUrl
+      preloadImg.onload = () => {
+        if (imgEl && !streamError) {
+          imgEl.src = nextUrl
+          isPreloading = false
+        }
+      }
+      preloadImg.onerror = () => {
+        isPreloading = false
+        handleError()
+      }
+    }
+    
+    // Start initial stream
     tryMjpegStream(imgEl)
     
     // Handle load success
     const handleLoad = () => {
       console.log(`Camera ${camera.name} MJPEG stream loaded successfully`);
       setIsConnecting(false);
+      
       // Clear any pending retries
       if (timeoutRef.current) {
         clearTimeout(timeoutRef.current)
         timeoutRef.current = undefined
       }
+
+      // Set up auto-reconnect timer
+      timeoutRef.current = setTimeout(() => {
+        if (!streamError) {
+          console.log('Auto-reconnecting MJPEG stream...')
+          preloadNextStream()
+        }
+      }, 9000) // Reconnect just before the 10s timeout
     }
 
     // Handle errors
@@ -119,11 +153,12 @@ export function CameraViewer({ camera, onDelete }: CameraViewerProps) {
         clearTimeout(timeoutRef.current)
         timeoutRef.current = undefined
       }
+      preloadImg.src = ''
       imgEl.removeEventListener('load', handleLoad)
       imgEl.removeEventListener('error', handleError)
       imgEl.src = ''
     }
-  }, [camera.name, tryMjpegStream, isConnecting])
+  }, [camera.name, tryMjpegStream, isConnecting, getMjpegUrl, streamError])
 
   useEffect(() => {
     if (camera.streamType === "mjpeg") {
